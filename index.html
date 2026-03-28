@@ -1,133 +1,470 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="en">
 <head>
-<title>Urban Heat Island Analysis System</title>
-
-<link rel="stylesheet" href="style.css">
-
-<!-- Chart.js -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Urban Heat Island Analysis Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.heat/0.2.0/leaflet-heat.js"></script>
 </head>
-
 <body>
 
-<header>
-<h1>Urban Heat Island Effect Analysis</h1>
-
-<p>Analyze heat zones using Landsat satellite data (NDVI & LST)</p>
-
-<p>
-This system uses satellite-based environmental parameters like
-Land Surface Temperature (LST) and Vegetation Index (NDVI)
-to identify Urban Heat Island zones.
-</p>
-</header>
-
-<div class="container">
-
-<h2>Select Location</h2>
-
-<select id="location">
-<option>Ghansoli</option>
-<option>Panvel</option>
-<option>Thane</option>
-<option>Kalyan</option>
-<option>Mumbai</option>
-<option>Vashi</option>
-<option>Nerul</option>
-<option>CST</option>
-<option>Wadala</option>
-<option>Dadar</option>
-<option>Andheri</option>
-<option>Borivali</option>
-</select>
-
-<br><br>
-
-<button onclick="getHeatData()">Analyze Heat Zone</button>
-
-<h3 id="result"></h3>
-
-<h2>SELECT</h2>
-
-<button onclick="showMaps()">Satellite Maps</button>
-<button onclick="showGraphs()">Graphs</button>
-
-<div id="mapSection">
-
-<h2>Satellite Maps (Landsat)</h2>
-
-<div class="graph-container">
-
-<div class="graph-box">
-<h3>NDVI Map (Vegetation)</h3>
-<img id="ndviMap" src="ndvi_ghansoli.png" width="100%">
+<!-- SIDEBAR NAVIGATION -->
+<div class="sidebar">
+    <div class="sidebar-header">
+        <h2>🌍 UHI System</h2>
+    </div>
+    <nav class="sidebar-nav">
+        <button class="nav-btn active" onclick="showSection('dashboard')">
+            <span class="icon">📊</span>
+            <span>Dashboard</span>
+        </button>
+        <button class="nav-btn" onclick="showSection('maps')">
+            <span class="icon">🛰️</span>
+            <span>Satellite Maps</span>
+        </button>
+        <button class="nav-btn" onclick="showSection('graphs')">
+            <span class="icon">📈</span>
+            <span>Graphs</span>
+        </button>
+        <button class="nav-btn" onclick="showSection('traffic')">
+            <span class="icon">🚗</span>
+            <span>Traffic Analysis</span>
+        </button>
+        <button class="nav-btn" onclick="showSection('vehicles')">
+            <span class="icon">📉</span>
+            <span>Vehicle Reduction</span>
+        </button>
+        <button class="nav-btn" onclick="showSection('vegetation')">
+            <span class="icon">🌳</span>
+            <span>Vegetation Details</span>
+        </button>
+        <button class="nav-btn" onclick="showSection('plantation')">
+            <span class="icon">🌱</span>
+            <span>Plantation Zones</span>
+        </button>
+    </nav>
 </div>
 
-<div class="graph-box">
-<h3>LST Map (Surface Temperature)</h3>
-<img id="lstMap" src="lst_ghansoli.png" width="100%">
-</div>
+<!-- MAIN CONTENT AREA -->
+<div class="main">
+
+    <!-- DASHBOARD SECTION -->
+    <div id="dashboard" class="section active">
+        <div class="section-header">
+            <h1>Dashboard</h1>
+            <p>Select a location and analyze urban heat patterns</p>
+        </div>
+        
+        <div class="dashboard-container">
+            <div class="control-card">
+                <label for="location">Select Location:</label>
+                <select id="location">
+                    <option>Ghansoli</option>
+                    <option>Panvel</option>
+                    <option>Thane</option>
+                    <option>Mumbai</option>
+                    <option>Vashi</option>
+                    <option>Nerul</option>
+                    <option>CST</option>
+                    <option>Dadar</option>
+                    <option>Kalyan</option>
+                    <option>Borivali</option>
+                    <option>Wadala</option>
+                    <option>Andheri</option>
+                </select>
+                <button class="btn-primary" onclick="getHeatData()">Analyze Location</button>
+            </div>
+
+            <div class="results-grid" id="resultsGrid">
+                <div class="metric-card">
+                    <div class="metric-icon">🌡️</div>
+                    <div class="metric-label">Temperature</div>
+                    <div class="metric-value" id="tempValue">-</div>
+                    <div class="metric-unit">°C</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-icon">🌿</div>
+                    <div class="metric-label">Vegetation (NDVI)</div>
+                    <div class="metric-value" id="vegValue">-</div>
+                    <div class="metric-unit">Index</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-icon">🏙️</div>
+                    <div class="metric-label">Urban Density</div>
+                    <div class="metric-value" id="densityValue">-</div>
+                    <div class="metric-unit">Scale</div>
+                </div>
+                <div class="metric-card heat-score-card">
+                    <div class="metric-icon">🔥</div>
+                    <div class="metric-label">Heat Score</div>
+                    <div class="metric-value" id="heatValue">-</div>
+                    <div class="metric-unit">Index</div>
+                </div>
+            </div>
+
+            <div class="analysis-card">
+                <h3>Analysis Summary</h3>
+                <p id="analysisText">Select a location and click Analyze to see detailed analysis.</p>
+            </div>
+
+            <div class="reference-card">
+                <h4>📚 Scientific Reference</h4>
+                <p><strong>Formula:</strong> Urban Heat Island Index (UHII) based on Liu et al. (2015)</p>
+                <p><strong>Citation:</strong> Liu et al., "Quantifying Urban Heat Island Effect in Developing Asian Cities," 
+                Remote Sensing Letters, 2015</p>
+                <p><strong>Function:</strong> UHII = (0.42×LST) + (0.25×Urban_Built) - (0.58×NDVI) + (0.15×Water)</p>
+                <p style="font-size: 12px; color: #666; margin-top: 8px;">
+                ℹ️ Values normalized to 0-100 scale using local temperature range (28-36°C) and NDVI variations (0.20-0.45) typical for Mumbai region.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- SATELLITE MAPS SECTION -->
+    <div id="maps" class="section">
+        <div class="section-header">
+            <h1>Satellite Maps</h1>
+            <p>NDVI and Land Surface Temperature visualization</p>
+        </div>
+        
+        <div class="maps-container">
+            <div class="map-card">
+                <h3>NDVI Map (Vegetation Index)</h3>
+                <img id="ndviMapImage" src="https://via.placeholder.com/400x300?text=NDVI+Map" alt="NDVI Satellite Map">
+                <p class="map-info" id="ndviInfo">📍 Select a location and click Analyze to load NDVI data</p>
+            </div>
+            <div class="map-card">
+                <h3>LST Map (Land Surface Temperature)</h3>
+                <img id="lstMapImage" src="https://via.placeholder.com/400x300?text=LST+Map" alt="LST Satellite Map">
+                <p class="map-info" id="lstInfo">📍 Select a location and click Analyze to load LST data</p>
+            </div>
+        </div>
+
+        <div class="legend-card">
+            <h3>Legend</h3>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #ff0000;"></div>
+                <span>High Temperature / Low Vegetation</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #ffff00;"></div>
+                <span>Moderate</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #00ff00;"></div>
+                <span>Cool / High Vegetation</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- GRAPHS SECTION -->
+    <div id="graphs" class="section">
+        <div class="section-header">
+            <h1>Data Visualization</h1>
+            <p>Temperature, vegetation, and heat trend analysis</p>
+        </div>
+        
+        <div class="charts-grid">
+            <div class="chart-card">
+                <h3>Temperature by Location</h3>
+                <canvas id="tempChart"></canvas>
+            </div>
+            <div class="chart-card">
+                <h3>Vegetation Index (NDVI)</h3>
+                <canvas id="vegChart"></canvas>
+            </div>
+            <div class="chart-card">
+                <h3>NDVI vs Temperature</h3>
+                <canvas id="scatterChart"></canvas>
+            </div>
+            <div class="chart-card">
+                <h3>Heat Trend (Area)</h3>
+                <canvas id="trendChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- TRAFFIC ANALYSIS SECTION -->
+    <div id="traffic" class="section">
+        <div class="section-header">
+            <h1>Traffic & Heat Island Analysis</h1>
+            <p>Real-time traffic analysis with vehicle emissions and heat intensity</p>
+        </div>
+        
+        <div class="traffic-container">
+            <div class="map-wrapper">
+                <div id="trafficMap" style="width: 100%; height: 500px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);"></div>
+                <div class="map-legend" style="margin-top: 15px; padding: 12px; background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                        <div style="display: flex; align-items: center; gap: 6px;">
+                            <div style="width: 16px; height: 16px; border-radius: 50%; background: #00aa00;"></div>
+                            <span>Low Traffic</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 6px;">
+                            <div style="width: 16px; height: 16px; border-radius: 50%; background: #ffaa00;"></div>
+                            <span>Moderate Traffic</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 6px;">
+                            <div style="width: 16px; height: 16px; border-radius: 50%; background: #ff0000;"></div>
+                            <span>Heavy Traffic</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="traffic-info-panel">
+                <h3>📊 Traffic & Emissions Analysis</h3>
+                
+                <div class="traffic-status">
+                    <div class="status-label">Current Status:</div>
+                    <div class="status-value" id="trafficStatus">Select a location</div>
+                </div>
+
+                <div class="traffic-metrics">
+                    <div class="traffic-metric">
+                        <span class="label">🚗 Estimated Vehicles:</span>
+                        <span class="value" id="vehicleCount">-</span>
+                    </div>
+                    <div class="traffic-metric">
+                        <span class="label">🚦 Traffic Level:</span>
+                        <span class="value" id="trafficLevel">-</span>
+                    </div>
+                    <div class="traffic-metric">
+                        <span class="label">💨 CO₂ Emissions:</span>
+                        <span class="value" id="emissionsValue">-</span>
+                    </div>
+                    <div class="traffic-metric">
+                        <span class="label">🌡️ Temperature Impact:</span>
+                        <span class="value" id="tempImpact">-</span>
+                    </div>
+                </div>
+
+                <div class="recommendations">
+                    <h4>📋 Vehicle Reduction Recommendations:</h4>
+                    <ul id="recommendationsList">
+                        <li>Select a location to view recommendations</li>
+                    </ul>
+                </div>
+
+                <div class="heatmap-info">
+                    <h4>ℹ️ About This Data</h4>
+                    <p>Red zones indicate areas with high traffic congestion and vehicle emissions. Green zones show smooth traffic flow with lower emissions.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- VEHICLE REDUCTION ANALYSIS SECTION -->
+    <div id="vehicles" class="section">
+        <div class="section-header">
+            <h1>Vehicle Reduction Impact Analysis</h1>
+            <p>Compare current vs. reduced vehicle ratios and environmental savings</p>
+        </div>
+        
+        <div class="vehicle-container">
+            <div class="vehicle-selector">
+                <label>Select Location:</label>
+                <select id="vehicleLocation" onchange="updateVehicleAnalysis()" style="padding: 8px; border-radius: 4px; border: 2px solid #3498db;">
+                    <option value="">Choose a location...</option>
+                    <option>Ghansoli</option>
+                    <option>Panvel</option>
+                    <option>Thane</option>
+                    <option>Mumbai</option>
+                    <option>Vashi</option>
+                    <option>Nerul</option>
+                    <option>CST</option>
+                    <option>Dadar</option>
+                    <option>Kalyan</option>
+                    <option>Borivali</option>
+                    <option>Wadala</option>
+                    <option>Andheri</option>
+                </select>
+            </div>
+
+            <div class="charts-grid">
+                <div class="chart-card">
+                    <h3>📊 Current vs Reduced Vehicles</h3>
+                    <canvas id="vehicleReductionChart"></canvas>
+                </div>
+                <div class="chart-card">
+                    <h3>💨 CO₂ Emission Reduction</h3>
+                    <canvas id="emissionReductionChart"></canvas>
+                </div>
+            </div>
+
+            <div class="metrics-grid" id="vehicleMetrics">
+                <div class="metric-box">
+                    <div class="metric-label">Current Vehicles</div>
+                    <div class="metric-value" id="currentVehicles">-</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-label">Reduced Vehicles (Target)</div>
+                    <div class="metric-value" id="reducedVehicles">-</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-label">Vehicle Reduction %</div>
+                    <div class="metric-value" id="reductionPercent">-</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-label">CO₂ Saved (tons/day)</div>
+                    <div class="metric-value" id="co2Saved">-</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-label">Temperature Reduction</div>
+                    <div class="metric-value" id="tempReduction">-°C</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-label">Air Quality Improvement</div>
+                    <div class="metric-value" id="airQualityImprove">-</div>
+                </div>
+            </div>
+
+            <div class="benefits-card">
+                <h3>🎯 Benefits of Vehicle Reduction</h3>
+                <ul id="vehicleBeneftsList">
+                    <li>Lower CO₂ emissions and better air quality</li>
+                    <li>Reduced urban heat island effect</li>
+                    <li>Less traffic congestion</li>
+                    <li>Lower fuel consumption and costs</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- VEGETATION DETAILS SECTION -->
+    <div id="vegetation" class="section">
+        <div class="section-header">
+            <h1>Vegetation & Green Space Analysis</h1>
+            <p>Detailed vegetation coverage by location with planting recommendations</p>
+        </div>
+        
+        <div class="vegetation-container">
+            <div class="vegetation-selector">
+                <label>Select Location:</label>
+                <select id="vegLocation" onchange="updateVegetationDetails()" style="padding: 8px; border-radius: 4px; border: 2px solid #27ae60;">
+                    <option value="">Choose a location...</option>
+                    <option>Ghansoli</option>
+                    <option>Panvel</option>
+                    <option>Thane</option>
+                    <option>Mumbai</option>
+                    <option>Vashi</option>
+                    <option>Nerul</option>
+                    <option>CST</option>
+                    <option>Dadar</option>
+                    <option>Kalyan</option>
+                    <option>Borivali</option>
+                    <option>Wadala</option>
+                    <option>Andheri</option>
+                </select>
+            </div>
+
+            <div class="charts-grid">
+                <div class="chart-card">
+                    <h3>🌳 Vegetation Type Distribution</h3>
+                    <canvas id="vegTypeChart"></canvas>
+                </div>
+                <div class="chart-card">
+                    <h3>📍 Green Space Coverage</h3>
+                    <canvas id="greenSpaceChart"></canvas>
+                </div>
+            </div>
+
+            <div class="veg-details-grid" id="vegDetails">
+                <div class="veg-box">
+                    <div class="veg-label">NDVI Index</div>
+                    <div class="veg-value" id="ndviValue">-</div>
+                    <div class="veg-status" id="ndviStatus">-</div>
+                </div>
+                <div class="veg-box">
+                    <div class="veg-label">Parks Area</div>
+                    <div class="veg-value" id="parkArea">-</div>
+                    <div class="veg-unit">sq km</div>
+                </div>
+                <div class="veg-box">
+                    <div class="veg-label">Gardens & Water Bodies</div>
+                    <div class="veg-value" id="gardensArea">-</div>
+                    <div class="veg-unit">sq km</div>
+                </div>
+                <div class="veg-box">
+                    <div class="veg-label">Tree Density</div>
+                    <div class="veg-value" id="treeDensity">-</div>
+                    <div class="veg-unit">trees/hectare</div>
+                </div>
+            </div>
+
+            <div class="veg-breakdown">
+                <h3>🌿 Vegetation Breakdown</h3>
+                <div id="vegBreakdownList" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-top: 15px;">
+                    <!-- Populated by JavaScript -->
+                </div>
+            </div>
+
+            <div class="planting-recommendations" id="plantingRecommendations">
+                <h3>💡 Recommended Trees for Planting</h3>
+                <ul id="plantingSuggestions">
+                    <li>Loading recommendations...</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- PLANTATION ZONES SECTION -->
+    <div id="plantation" class="section">
+        <div class="section-header">
+            <h1>Plantation Zones</h1>
+            <p>Identify areas with low vegetation for afforestation initiatives</p>
+        </div>
+        
+        <div class="plantation-container">
+            <div class="plantation-map">
+                <img src="https://via.placeholder.com/600x400?text=Parsik+Hill+5km+Buffer+Map" alt="Plantation Zone Map">
+            </div>
+
+            <div class="plantation-info">
+                <div class="zone-card">
+                    <h3>🟥 High Priority Zones (NDVI < 0.30)</h3>
+                    <ul id="highPriorityZones">
+                        <li>Loading priorities...</li>
+                    </ul>
+                </div>
+
+                <div class="zone-card">
+                    <h3>🟧 Medium Priority Zones (NDVI 0.30-0.35)</h3>
+                    <ul id="mediumPriorityZones">
+                        <li>Loading priorities...</li>
+                    </ul>
+                </div>
+
+                <div class="zone-card">
+                    <h3>🟨 Low Priority Zones (NDVI > 0.35)</h3>
+                    <ul id="lowPriorityZones">
+                        <li>Loading priorities...</li>
+                    </ul>
+                </div>
+
+                <div class="suggestion-card">
+                    <h3>💡 Plantation Suggestions</h3>
+                    <p>Plant native species to enhance vegetation cover in low NDVI areas. Focus on:</p>
+                    <ul>
+                        <li>Neem trees for natural cooling</li>
+                        <li>Coconut palms for shade</li>
+                        <li>Mango and tamarind for dense canopy</li>
+                        <li>Marigold for ground cover</li>
+                        <li>Gulmohar for aesthetic value</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
 
 </div>
 
-</div>
-
-
-<div id="graphSection" style="display:none;">
-
-<div class="graph-container">
-
-<div class="graph-box">
-<h2>Temperature vs Heat Score</h2>
-<canvas id="tempChart"></canvas>
-</div>
-
-<div class="graph-box">
-<h2>Vegetation vs Heat Score</h2>
-<canvas id="vegChart"></canvas>
-</div>
-
-</div>
-
-</div>
-
-<h2>Heat Zone Legend</h2>
-
-<div class="legend">
-<p><span class="red"></span> High Heat Zone</p>
-<p><span class="orange"></span> Moderate Heat Zone</p>
-<p><span class="green"></span> Low Heat Zone</p>
-</div>
-
-<!-- FACTS -->
-<h2>Urban Heat Island Facts</h2>
-
-<ul>
-<li>Cities are usually 1–7°C hotter than nearby rural areas.</li>
-<li>Concrete and asphalt absorb and store heat.</li>
-<li>Lack of vegetation increases urban temperature.</li>
-<li>Urban trees and green roofs help reduce heat.</li>
-<li>Urban Heat Island effect impacts climate and human health.</li>
-</ul>
-
-<!-- BENEFITS -->
-<h2>Urban Planning Benefits</h2>
-
-<ul>
-<li>Heat risk alerts for citizens ⚠️</li>
-<li>Better urban planning decisions 🏙</li>
-<li>Improved public health awareness ❤️</li>
-<li>Cooler and greener cities 🌿</li>
-</ul>
-
-</div>
-
-<!-- JS FILE -->
+<!-- SCRIPTS -->
 <script src="script.js"></script>
 
 </body>
-
 </html>
