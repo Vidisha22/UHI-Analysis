@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>Urban Heat Island Analysis System</title>
+
+<link rel="stylesheet" href="style.css">
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+</head>
+
+<body>
+
+<header>
+<h1>Urban Heat Island Effect Analysis</h1>
+
+<p>Analyze heat zones using Landsat satellite data (NDVI & LST)</p>
+
+<p>
+This system uses satellite-based environmental parameters like
+Land Surface Temperature (LST) and Vegetation Index (NDVI)
+to identify Urban Heat Island zones.
+</p>
+</header>
+
+<div class="container">
+
+<h2>Select Location</h2>
+
+<select id="location">
+<option>Ghansoli</option>
+<option>Panvel</option>
+<option>Thane</option>
+<option>Kalyan</option>
+<option>Mumbai</option>
+<option>Vashi</option>
+<option>Nerul</option>
+<option>CST</option>
+<option>Wadala</option>
+<option>Dadar</option>
+<option>Andheri</option>
+<option>Borivali</option>
+</select>
+
+<br><br>
+
+<button onclick="getHeatData()">Analyze Heat Zone</button>
+
+<h3 id="result"></h3>
+
+<h2>SELECT</h2>
+
+<button onclick="showMaps()">Satellite Maps</button>
+<button onclick="showGraphs()">Graphs</button>
+
+<div id="mapSection">
+
+<h2>Satellite Maps (Landsat)</h2>
+
+<div class="graph-container">
+
+<div class="graph-box">
+<h3>NDVI Map (Vegetation)</h3>
+<img id="ndviMap" src="ndvi_ghansoli.png" width="100%">
+</div>
+
+<div class="graph-box">
+<h3>LST Map (Surface Temperature)</h3>
+<img id="lstMap" src="lst_ghansoli.png" width="100%">
+</div>
+
+</div>
+
+</div>
+
+
+<div id="graphSection" style="display:none;">
+
+<div class="graph-container">
+
+<div class="graph-box">
+<h2>Temperature vs Heat Score</h2>
+<canvas id="tempChart"></canvas>
+</div>
+
+<div class="graph-box">
+<h2>Vegetation vs Heat Score</h2>
+<canvas id="vegChart"></canvas>
+</div>
+
+</div>
+
+</div>
+
+<h2>Heat Zone Legend</h2>
+
+<div class="legend">
+<p><span class="red"></span> High Heat Zone</p>
+<p><span class="orange"></span> Moderate Heat Zone</p>
+<p><span class="green"></span> Low Heat Zone</p>
+</div>
+
+<!-- FACTS -->
+<h2>Urban Heat Island Facts</h2>
+
+<ul>
+<li>Cities are usually 1–7°C hotter than nearby rural areas.</li>
+<li>Concrete and asphalt absorb and store heat.</li>
+<li>Lack of vegetation increases urban temperature.</li>
+<li>Urban trees and green roofs help reduce heat.</li>
+<li>Urban Heat Island effect impacts climate and human health.</li>
+</ul>
+
+<!-- BENEFITS -->
+<h2>Urban Planning Benefits</h2>
+
+<ul>
+<li>Heat risk alerts for citizens ⚠️</li>
+<li>Better urban planning decisions 🏙</li>
+<li>Improved public health awareness ❤️</li>
+<li>Cooler and greener cities 🌿</li>
+</ul>
+
+</div>
+
+<!-- JS FILE -->
+<script src="script.js"></script>
+
+</body>
+
+</html>

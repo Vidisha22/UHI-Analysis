@@ -1,0 +1,62 @@
+{
+  "Ghansoli": {
+    "temp": 33.2,
+    "veg": 0.35,
+    "density": 8
+  },
+  "Panvel": {
+    "temp": 31.5,
+    "veg": 0.42,
+    "density": 6
+  },
+  "Thane": {
+    "temp": 34.0,
+    "veg": 0.30,
+    "density": 8
+  },
+  "Kalyan": {
+    "temp": 32.5,
+    "veg": 0.38,
+    "density": 7
+  },
+  "Mumbai": {
+    "temp": 35.5,
+    "veg": 0.25,
+    "density": 9
+  },
+  "Vashi": {
+    "temp": 34.2,
+    "veg": 0.32,
+    "density": 8
+  },
+  "Nerul": {
+    "temp": 33.0,
+    "veg": 0.36,
+    "density": 7
+  },
+  "CST": {
+    "temp": 36.5,
+    "veg": 0.20,
+    "density": 10
+  },
+  "Wadala": {
+    "temp": 35.2,
+    "veg": 0.27,
+    "density": 9
+  },
+  "Dadar": {
+    "temp": 35.0,
+    "veg": 0.26,
+    "density": 9
+  },
+  "Andheri": {
+    "temp": 34.5,
+    "veg": 0.28,
+    "density": 8
+  },
+  "Borivali": {
+    "temp": 32.8,
+    "veg": 0.40,
+    "density": 7
+  }
+}
